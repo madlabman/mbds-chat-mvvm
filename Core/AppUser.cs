@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 
-namespace ChatApp.Model
+namespace ChatApp.Core
 {
     // Create instance of current application user and use for access across application.
     public class AppUser : User

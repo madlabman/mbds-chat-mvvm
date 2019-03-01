@@ -55,15 +55,15 @@
             <SubType>Designer</SubType>
         </ApplicationDefinition>
         <Compile Include="Helper\CryptoHelper.cs" />
-        <Compile Include="Model\AesKey.cs" />
-        <Compile Include="Model\AppUser.cs" />
-        <Compile Include="Model\Dialog.cs" />
-        <Compile Include="Model\Message.cs" />
+        <Compile Include="Core\AesKey.cs" />
+        <Compile Include="Core\AppUser.cs" />
+        <Compile Include="Core\Dialog.cs" />
+        <Compile Include="Core\Message.cs" />
         <Compile Include="App.xaml.cs">
             <DependentUpon>App.xaml</DependentUpon>
             <SubType>Code</SubType>
         </Compile>
-        <Compile Include="Model\User.cs" />
+        <Compile Include="Core\User.cs" />
         <Compile Include="View\MainWindow.xaml.cs">
           <DependentUpon>MainWindow.xaml</DependentUpon>
           <SubType>Code</SubType>

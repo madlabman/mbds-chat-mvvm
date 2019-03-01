@@ -2,7 +2,7 @@ using System;
 using System.Security.Cryptography;
 using Newtonsoft.Json;
 
-namespace ChatApp.Model
+namespace ChatApp.Core
 {
     public class AesKey
     {

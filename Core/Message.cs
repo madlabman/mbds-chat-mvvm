@@ -4,13 +4,14 @@ using System.Text;
 using ChatApp.Helper;
 using Newtonsoft.Json;
 
-namespace ChatApp.Model
+namespace ChatApp.Core
 {
     public enum MessageType
     {
         Undefined = 0, // Default value when deserialize object.
         KeyExchange, // Indicate key exchange procedure.
-        Plaintext // Normal message.
+        Plaintext, // Normal message.
+        Encrypted // Secured with AES.
     }
 
     public class Message
@@ -29,7 +30,7 @@ namespace ChatApp.Model
         // Decrypt Base64Content field content and place it to the Body field.
         public bool DecryptBodyBySymmetricAlgorithm(SymmetricAlgorithm key)
         {
-            if (Type != MessageType.Plaintext) return false; // Only this type of message use AES algorithm.
+            if (Type != MessageType.Encrypted) return false; // Only this type of message use AES algorithm.
             _decrypted = CryptoHelper.DecryptBySymmetricAlgorithm(Base64Content, key);
             return _decrypted != null;
         }
@@ -37,7 +38,7 @@ namespace ChatApp.Model
         // Encrypt content from Body field and place it to the Base64Content field.
         public bool EncryptBodyBySymmetricAlgorithm(SymmetricAlgorithm key)
         {
-            if (Type != MessageType.Plaintext) return false; // Only this type of message use AES algorithm.
+            if (Type != MessageType.Encrypted) return false; // Only this type of message use AES algorithm.
             Base64Content = CryptoHelper.EncryptBySymmetricAlgorithm(Body, key);
             return Base64Content != null;
         }
@@ -45,6 +46,7 @@ namespace ChatApp.Model
         // Decrypt Base64Content field content and place it to the Body field.
         public bool DecryptBodyByAsymmetricAlgorithm(string privateKey)
         {
+            if (Type != MessageType.KeyExchange) return false; // Only this type of message use RSA algorithm.
             // Load key from XML string.
             RSA rsa = new RSACryptoServiceProvider();
             rsa.FromXmlString(privateKey);
@@ -57,6 +59,7 @@ namespace ChatApp.Model
         // Encrypt content from Body field and place it to the Base64Content field.
         public bool EncryptBodyByAsymmetricAlgorithm(string publicKey)
         {
+            if (Type != MessageType.KeyExchange) return false; // Only this type of message use RSA algorithm.
             // Load key from XML string.
             RSA rsa = new RSACryptoServiceProvider();
             rsa.FromXmlString(publicKey);

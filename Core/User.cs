@@ -1,4 +1,4 @@
-namespace ChatApp.Model
+namespace ChatApp.Core
 {
     public class User
     {
