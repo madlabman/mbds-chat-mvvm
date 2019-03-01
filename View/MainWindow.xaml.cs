@@ -1,4 +1,4 @@
-﻿namespace ChatApp
+﻿namespace ChatApp.View
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
