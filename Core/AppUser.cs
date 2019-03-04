@@ -7,6 +7,8 @@ namespace ChatApp.Core
     {
         private static AppUser _user;
 
+        public Client.Client Client { get; set; }
+
         public AppUser()
         {
             // TODO: Move to registration.
@@ -15,6 +17,7 @@ namespace ChatApp.Core
             PublicKeyXml = rsa.ToXmlString(false);
             PrivateKeyXml = rsa.ToXmlString(true);
             // TODO: Persist user data.
+           Client = new Client.Client();
         }
 
         public static AppUser GetInstance()

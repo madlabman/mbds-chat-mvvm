@@ -19,7 +19,6 @@ namespace ChatApp.Core
         public MessageType Type { get; set; }
 
         public string SenderUuid { get; set; }
-        public string ReceiverUuid { get; set; }
 
         public string Base64Content { get; set; } // Everyone message contain base64-encoded encrypted text.
 
