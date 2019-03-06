@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Documents;
 using ChatApp.Core;
 using Newtonsoft.Json.Linq;
 using RestSharp;
@@ -24,12 +23,12 @@ namespace ChatApp.Client
         public bool SignIn(string login, string password)
         {
             Errors.Clear();
-            
+
             var request = new RestRequest("/signin");
             request.AddParameter("login", login);
             request.AddParameter("password", password);
             var response = _restClient.Post(request);
-            
+
             var jObject = JObject.Parse(response.Content);
             var error = (string) jObject["error"];
             if (string.IsNullOrEmpty(error))
@@ -53,11 +52,13 @@ namespace ChatApp.Client
         public bool SignUp(string login, string name, string password, string publicKey)
         {
             Errors.Clear();
+
             var request = new RestRequest("/signup");
             request.AddParameter("name", name);
             request.AddParameter("login", login);
             request.AddParameter("password", password);
             request.AddParameter("public_key", publicKey);
+
             var response = _restClient.Post(request);
             var jObject = JObject.Parse(response.Content);
             if (jObject.ContainsKey("success"))
@@ -98,7 +99,7 @@ namespace ChatApp.Client
             if (jObject.ContainsKey("dialogs"))
             {
                 var dialogsList = jObject["dialogs"].Select(dialogJson =>
-                    new Dialog() {Partner = _parseUserFromJObject(dialogJson["users"]["1"])}).ToList();
+                    new Dialog() {Partner = _parseUserFromJObject(dialogJson["user"])}).ToList();
                 return dialogsList;
             }
 
@@ -173,7 +174,8 @@ namespace ChatApp.Client
             var jObject = JObject.Parse(response.Content);
             if (jObject.ContainsKey("messages"))
             {
-                var messagesList = jObject["messages"].Select(message => Message.FromJsonString((string)message["content"])).ToList();
+                var messagesList = jObject["messages"]
+                    .Select(message => Message.FromJsonString((string) message["content"])).ToList();
                 return messagesList;
             }
 
@@ -186,9 +188,9 @@ namespace ChatApp.Client
             {
                 return false;
             }
-            
+
             Errors.Clear();
-            
+
             var request = new RestRequest("/dialogs/{login}/message");
             request.AddParameter("api_token", _apiKey);
             request.AddParameter("content", message.ToJsonString());
@@ -201,7 +203,7 @@ namespace ChatApp.Client
                 var success = (bool) jObject["success"];
                 if (!success)
                 {
-                    Errors.Add((string)jObject["error"]);
+                    Errors.Add((string) jObject["error"]);
                 }
 
                 return true;

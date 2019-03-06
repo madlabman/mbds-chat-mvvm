@@ -2,9 +2,9 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 
-namespace ChatApp.Helper
+namespace ChatApp.Core
 {
-    public class CryptoHelper
+    public class Crypto
     {
         public static string DecryptBySymmetricAlgorithm(string base64CipherText, SymmetricAlgorithm aesAlgorithm)
         {

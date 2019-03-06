@@ -1,7 +1,4 @@
-﻿using System;
-using System.Security.Cryptography;
-using System.Windows;
-using ChatApp.Helper;
+﻿using ChatApp.Client;
 
 namespace ChatApp.View
 {
@@ -13,6 +10,7 @@ namespace ChatApp.View
         public MainWindow()
         {
             InitializeComponent();
+            Example.Run();
         }
     }
 }

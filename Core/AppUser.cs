@@ -9,15 +9,10 @@ namespace ChatApp.Core
 
         public Client.Client Client { get; set; }
 
-        public AppUser()
+        private AppUser()
         {
-            // TODO: Move to registration.
-            RSA rsa = new RSACryptoServiceProvider(2048);
-            // Export generated key parameters.
-            PublicKeyXml = rsa.ToXmlString(false);
-            PrivateKeyXml = rsa.ToXmlString(true);
             // TODO: Persist user data.
-           Client = new Client.Client();
+            Client = new Client.Client();
         }
 
         public static AppUser GetInstance()
