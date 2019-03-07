@@ -11,19 +11,16 @@ namespace ChatApp.Client
         private RestClient _restClient;
         private string _apiKey;
         private bool _isSignedIn = false;
-        public List<string> Errors { get; }
+        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
         public Client()
         {
             const string apiBase = "http://138.197.184.164:40080"; // Hardcoded Uri of the backend.
             _restClient = new RestClient(apiBase);
-            Errors = new List<string>();
         }
 
         public bool SignIn(string login, string password)
         {
-            Errors.Clear();
-
             var request = new RestRequest("/signin");
             request.AddParameter("login", login);
             request.AddParameter("password", password);
@@ -43,7 +40,7 @@ namespace ChatApp.Client
             }
             else
             {
-                Errors.Add(error);
+                Logger.Debug(error);
             }
 
             return false;
@@ -51,8 +48,6 @@ namespace ChatApp.Client
 
         public bool SignUp(string login, string name, string password, string publicKey)
         {
-            Errors.Clear();
-
             var request = new RestRequest("/signup");
             request.AddParameter("name", name);
             request.AddParameter("login", login);
@@ -73,9 +68,10 @@ namespace ChatApp.Client
             }
             else
             {
+                Logger.Info("Unable to sign up.");
                 foreach (var error in jObject.Children().Children().Children()) // TODO: fix this ugly construction
                 {
-                    Errors.Add(error.ToString());
+                    Logger.Debug(error.ToString());
                 }
             }
 
@@ -88,8 +84,6 @@ namespace ChatApp.Client
             {
                 return null;
             }
-
-            Errors.Clear();
 
             var request = new RestRequest("/dialogs/list");
             request.AddParameter("api_token", _apiKey);
@@ -113,8 +107,6 @@ namespace ChatApp.Client
                 return null;
             }
 
-            Errors.Clear();
-
             var request = new RestRequest("/user/{login}");
             request.AddUrlSegment("login", login);
             request.AddParameter("api_token", _apiKey);
@@ -126,7 +118,7 @@ namespace ChatApp.Client
                 return _parseUserFromJObject(jObject);
             }
 
-            Errors.Add("User not found.");
+            Logger.Info("User {0} not found.", login);
             return null;
         }
 
@@ -136,8 +128,6 @@ namespace ChatApp.Client
             {
                 return false;
             }
-
-            Errors.Clear();
 
             var request = new RestRequest("/dialogs/{login}/add");
             request.AddParameter("api_token", _apiKey);
@@ -150,10 +140,10 @@ namespace ChatApp.Client
                 var success = (bool) jObject["success"];
                 if (!success)
                 {
-                    Errors.Add((string) jObject["error"]);
+                    Logger.Debug((string) jObject["error"]);
                 }
 
-                return true;
+                return success;
             }
 
             return false;
@@ -179,6 +169,8 @@ namespace ChatApp.Client
                 return messagesList;
             }
 
+            Logger.Info("Unable to fetch messages from dialog with {0}.", dialog.Partner.Login);
+
             return null;
         }
 
@@ -188,8 +180,6 @@ namespace ChatApp.Client
             {
                 return false;
             }
-
-            Errors.Clear();
 
             var request = new RestRequest("/dialogs/{login}/message");
             request.AddParameter("api_token", _apiKey);
@@ -203,10 +193,10 @@ namespace ChatApp.Client
                 var success = (bool) jObject["success"];
                 if (!success)
                 {
-                    Errors.Add((string) jObject["error"]);
+                    Logger.Debug((string) jObject["error"]);
                 }
 
-                return true;
+                return success;
             }
 
             return false;

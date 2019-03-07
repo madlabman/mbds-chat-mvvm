@@ -1,0 +1,33 @@
+<Window x:Class="ChatApp.View.AuthDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:local="clr-namespace:ChatApp.View"
+        xmlns:vm="clr-namespace:ChatApp.ViewModel"
+        mc:Ignorable="d"
+        Title="AuthDialog" Height="310" Width="310"
+        ResizeMode="NoResize">
+    <Window.DataContext>
+        <vm:AuthViewModel />
+    </Window.DataContext>
+    <Grid>
+        <StackPanel Orientation="Vertical" Margin="10">
+            <Label Content="Chat app" HorizontalAlignment="Center" FontWeight="Bold" />
+            <Label Content="Your name (leave blank in case of sign in)" />
+            <TextBox Margin="5" Padding="2" Text="{Binding Name}" />
+            <Label Content="Login" />
+            <TextBox Margin="5" Padding="2" Text="{Binding Login}" />
+            <Label Content="Password" />
+            <PasswordBox Margin="5" Padding="2" Name="PasswordBox" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <!-- @see https://stackoverflow.com/a/4649830 -->
+                <!-- @see https://stackoverflow.com/a/33015908 -->
+                <Button Content="Sign In" Margin="10" Width="60" Padding="5" Command="{Binding Path=SignInCommand}"
+                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}" />
+                <Button Content="Sign Up" Margin="10" Width="60" Padding="5" Command="{Binding Path=SignUpCommand}"
+                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}" />
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Window>

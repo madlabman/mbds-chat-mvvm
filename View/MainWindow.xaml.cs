@@ -10,7 +10,6 @@ namespace ChatApp.View
         public MainWindow()
         {
             InitializeComponent();
-            Example.Run();
         }
     }
 }
