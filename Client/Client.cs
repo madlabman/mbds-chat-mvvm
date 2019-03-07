@@ -15,7 +15,7 @@ namespace ChatApp.Client
 
         public Client()
         {
-            const string apiBase = "http://192.168.152.133:8080";
+            const string apiBase = "http://138.197.184.164:40080"; // Hardcoded Uri of the backend.
             _restClient = new RestClient(apiBase);
             Errors = new List<string>();
         }
