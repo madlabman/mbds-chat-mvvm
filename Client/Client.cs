@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ChatApp.Core;
@@ -21,26 +22,33 @@ namespace ChatApp.Client
 
         public bool SignIn(string login, string password)
         {
-            var request = new RestRequest("/signin");
-            request.AddParameter("login", login);
-            request.AddParameter("password", password);
-            var response = _restClient.Post(request);
-
-            var jObject = JObject.Parse(response.Content);
-            var error = (string) jObject["error"];
-            if (string.IsNullOrEmpty(error))
+            try
             {
-                var apiKey = (string) jObject["api_token"];
-                if (!string.IsNullOrEmpty(apiKey))
+                var request = new RestRequest("/signin");
+                request.AddParameter("login", login);
+                request.AddParameter("password", password);
+                var response = _restClient.Post(request);
+
+                var jObject = JObject.Parse(response.Content);
+                var error = (string) jObject["error"];
+                if (string.IsNullOrEmpty(error))
                 {
-                    _apiKey = apiKey;
-                    _isSignedIn = true;
-                    return true;
+                    var apiKey = (string) jObject["api_token"];
+                    if (!string.IsNullOrEmpty(apiKey))
+                    {
+                        _apiKey = apiKey;
+                        _isSignedIn = true;
+                        return true;
+                    }
+                }
+                else
+                {
+                    Logger.Debug("Error while signing in: {0}", error);
                 }
             }
-            else
+            catch (Exception exception)
             {
-                Logger.Debug(error);
+                Logger.Warn("Error while signing in: {0}", exception.Message);
             }
 
             return false;
@@ -48,31 +56,38 @@ namespace ChatApp.Client
 
         public bool SignUp(string login, string name, string password, string publicKey)
         {
-            var request = new RestRequest("/signup");
-            request.AddParameter("name", name);
-            request.AddParameter("login", login);
-            request.AddParameter("password", password);
-            request.AddParameter("public_key", publicKey);
-
-            var response = _restClient.Post(request);
-            var jObject = JObject.Parse(response.Content);
-            if (jObject.ContainsKey("success"))
+            try
             {
-                var apiKey = (string) jObject["api_token"];
-                if (!string.IsNullOrEmpty(apiKey))
+                var request = new RestRequest("/signup");
+                request.AddParameter("name", name);
+                request.AddParameter("login", login);
+                request.AddParameter("password", password);
+                request.AddParameter("public_key", publicKey);
+
+                var response = _restClient.Post(request);
+                var jObject = JObject.Parse(response.Content);
+                if (jObject.ContainsKey("success"))
                 {
-                    _apiKey = apiKey;
-                    _isSignedIn = true;
-                    return true;
+                    var apiKey = (string) jObject["api_token"];
+                    if (!string.IsNullOrEmpty(apiKey))
+                    {
+                        _apiKey = apiKey;
+                        _isSignedIn = true;
+                        return true;
+                    }
+                }
+                else
+                {
+                    Logger.Info("Unable to sign up.");
+                    foreach (var error in jObject.Children().Children().Children()) // TODO: fix this ugly construction
+                    {
+                        Logger.Debug("Error while signing up: {0}", error.ToString());
+                    }
                 }
             }
-            else
+            catch (Exception exception)
             {
-                Logger.Info("Unable to sign up.");
-                foreach (var error in jObject.Children().Children().Children()) // TODO: fix this ugly construction
-                {
-                    Logger.Debug(error.ToString());
-                }
+                Logger.Warn("Error while signing up: {0}", exception.Message);
             }
 
             return false;
@@ -85,17 +100,25 @@ namespace ChatApp.Client
                 return null;
             }
 
-            var request = new RestRequest("/dialogs/list");
-            request.AddParameter("api_token", _apiKey);
-            var response = _restClient.Get(request);
-
-            var jObject = JObject.Parse(response.Content);
-            if (jObject.ContainsKey("dialogs"))
+            try
             {
-                var dialogsList = jObject["dialogs"].Select(dialogJson =>
-                    new Dialog() {Partner = _parseUserFromJObject(dialogJson["user"])}).ToList();
-                return dialogsList;
+                var request = new RestRequest("/dialogs/list");
+                request.AddParameter("api_token", _apiKey);
+                var response = _restClient.Get(request);
+
+                var jObject = JObject.Parse(response.Content);
+                if (jObject.ContainsKey("dialogs"))
+                {
+                    var dialogsList = jObject["dialogs"].Select(dialogJson =>
+                        new Dialog() {Partner = _parseUserFromJObject(dialogJson["user"])}).ToList();
+                    return dialogsList;
+                }
             }
+            catch (Exception exception)
+            {
+                Logger.Warn("Error while fetching user dialogs: {0}", exception.Message);
+            }
+
 
             return null;
         }
@@ -107,15 +130,22 @@ namespace ChatApp.Client
                 return null;
             }
 
-            var request = new RestRequest("/user/{login}");
-            request.AddUrlSegment("login", login);
-            request.AddParameter("api_token", _apiKey);
-            var response = _restClient.Get(request);
-
-            var jObject = JObject.Parse(response.Content);
-            if (jObject.ContainsKey("id")) // Assume that successfully retrieve user
+            try
             {
-                return _parseUserFromJObject(jObject);
+                var request = new RestRequest("/user/{login}");
+                request.AddUrlSegment("login", login);
+                request.AddParameter("api_token", _apiKey);
+                var response = _restClient.Get(request);
+
+                var jObject = JObject.Parse(response.Content);
+                if (jObject.ContainsKey("id")) // Assume that successfully retrieve user
+                {
+                    return _parseUserFromJObject(jObject);
+                }
+            }
+            catch (Exception exception)
+            {
+                Logger.Warn("Error while fetching user info: {0}", exception.Message);
             }
 
             Logger.Info("User {0} not found.", login);
@@ -129,21 +159,28 @@ namespace ChatApp.Client
                 return false;
             }
 
-            var request = new RestRequest("/dialogs/{login}/add");
-            request.AddParameter("api_token", _apiKey);
-            request.AddUrlSegment("login", user.Login);
-            var response = _restClient.Get(request);
-
-            var jObject = JObject.Parse(response.Content);
-            if (jObject.ContainsKey("success"))
+            try
             {
-                var success = (bool) jObject["success"];
-                if (!success)
-                {
-                    Logger.Debug((string) jObject["error"]);
-                }
+                var request = new RestRequest("/dialogs/{login}/add");
+                request.AddParameter("api_token", _apiKey);
+                request.AddUrlSegment("login", user.Login);
+                var response = _restClient.Get(request);
 
-                return success;
+                var jObject = JObject.Parse(response.Content);
+                if (jObject.ContainsKey("success"))
+                {
+                    var success = (bool) jObject["success"];
+                    if (!success)
+                    {
+                        Logger.Debug("Error while sending add dialog request: {0}", (string) jObject["error"]);
+                    }
+
+                    return success;
+                }
+            }
+            catch (Exception exception)
+            {
+                Logger.Warn("Error while sending add dialog request: {0}", exception.Message);
             }
 
             return false;
@@ -156,17 +193,24 @@ namespace ChatApp.Client
                 return null;
             }
 
-            var request = new RestRequest("/dialogs/{login}/history");
-            request.AddUrlSegment("login", dialog.Partner.Login);
-            request.AddParameter("api_token", _apiKey);
-            var response = _restClient.Get(request);
-
-            var jObject = JObject.Parse(response.Content);
-            if (jObject.ContainsKey("messages"))
+            try
             {
-                var messagesList = jObject["messages"]
-                    .Select(message => Message.FromJsonString((string) message["content"])).ToList();
-                return messagesList;
+                var request = new RestRequest("/dialogs/{login}/history");
+                request.AddUrlSegment("login", dialog.Partner.Login);
+                request.AddParameter("api_token", _apiKey);
+                var response = _restClient.Get(request);
+
+                var jObject = JObject.Parse(response.Content);
+                if (jObject.ContainsKey("messages"))
+                {
+                    var messagesList = jObject["messages"]
+                        .Select(message => Message.FromJsonString((string) message["content"])).ToList();
+                    return messagesList;
+                }
+            }
+            catch (Exception exception)
+            {
+                Logger.Warn("Error while fetching messages: {0}", exception.Message);
             }
 
             Logger.Info("Unable to fetch messages from dialog with {0}.", dialog.Partner.Login);
@@ -181,22 +225,29 @@ namespace ChatApp.Client
                 return false;
             }
 
-            var request = new RestRequest("/dialogs/{login}/message");
-            request.AddParameter("api_token", _apiKey);
-            request.AddParameter("content", message.ToJsonString());
-            request.AddUrlSegment("login", dialog.Partner.Login);
-            var response = _restClient.Post(request);
-
-            var jObject = JObject.Parse(response.Content);
-            if (jObject.ContainsKey("success"))
+            try
             {
-                var success = (bool) jObject["success"];
-                if (!success)
-                {
-                    Logger.Debug((string) jObject["error"]);
-                }
+                var request = new RestRequest("/dialogs/{login}/message");
+                request.AddParameter("api_token", _apiKey);
+                request.AddParameter("content", message.ToJsonString());
+                request.AddUrlSegment("login", dialog.Partner.Login);
+                var response = _restClient.Post(request);
 
-                return success;
+                var jObject = JObject.Parse(response.Content);
+                if (jObject.ContainsKey("success"))
+                {
+                    var success = (bool) jObject["success"];
+                    if (!success)
+                    {
+                        Logger.Debug("Error while sending message: {0}", (string) jObject["error"]);
+                    }
+
+                    return success;
+                }
+            }
+            catch (Exception exception)
+            {
+                Logger.Warn("Error while sending message: {0}", exception.Message);
             }
 
             return false;

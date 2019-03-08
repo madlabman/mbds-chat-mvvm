@@ -88,6 +88,7 @@
     <Compile Include="Client\Client.cs" />
     <Compile Include="Client\Example.cs" />
     <Compile Include="Client\Protocol.cs" />
+    <Compile Include="Core\CredentialsManager.cs" />
     <Compile Include="Core\Crypto.cs" />
     <Compile Include="Core\RsaKeyPair.cs" />
     <Compile Include="Core\AesKey.cs" />
@@ -100,7 +101,12 @@
     </Compile>
     <Compile Include="Core\User.cs" />
     <Compile Include="Model\AuthModel.cs" />
+    <Compile Include="Model\DialogModel.cs" />
+    <Compile Include="Model\MainModel.cs" />
     <Compile Include="ViewModel\AuthViewModel.cs" />
+    <Compile Include="ViewModel\DialogViewModel.cs" />
+    <Compile Include="ViewModel\MainViewModel.cs" />
+    <Compile Include="ViewModel\MessageViewModel.cs" />
     <Compile Include="View\AuthDialog.xaml.cs">
       <DependentUpon>AuthDialog.xaml</DependentUpon>
     </Compile>

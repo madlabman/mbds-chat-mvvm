@@ -7,6 +7,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -24,7 +25,7 @@ namespace ChatApp.Client
             // Generate new key pair.
             var keyPair = RsaKeyPair.GenerateKeyPair();
             // Persist private key. Not the best place to do it, but it doesn't matter.
-            System.IO.File.WriteAllText(login + "-private-key.xml", keyPair.PrivateKeyXml);
+            CredentialsManager.Store(login, keyPair.PrivateKeyXml);
             // Client method call.
             return AppUser.GetInstance().Client.SignUp(login, name, password, keyPair.PublicKeyXml);
         }
@@ -39,7 +40,7 @@ namespace ChatApp.Client
                 Logger.Info("Signed in as {0}.", login);
                 FetchMyself(login);
                 // Restore private key.
-                AppUser.GetInstance().PrivateKeyXml = System.IO.File.ReadAllText(login + "-private-key.xml");
+                AppUser.GetInstance().PrivateKeyXml = CredentialsManager.Retrieve(login);
                 return true;
             }
 
@@ -143,7 +144,7 @@ namespace ChatApp.Client
 
         public static List<Message> GetDialogMessages(Dialog dialog)
         {
-            return AppUser.GetInstance().Client.GetMessages(dialog);
+            return AppUser.GetInstance().Client.GetMessages(dialog) ?? new List<Message>();
         }
 
         public static List<Message> DecryptDialogMessages(Dialog dialog)

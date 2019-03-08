@@ -1,5 +1,4 @@
 using System.Windows;
-using System.Windows.Controls;
 using ChatApp.Model;
 using ChatApp.View;
 using Prism.Commands;
@@ -12,7 +11,6 @@ namespace ChatApp.ViewModel
         private readonly AuthModel _model = new AuthModel();
         public string Name { get; set; }
         public string Login { get; set; }
-        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
         public AuthViewModel()
         {
@@ -30,6 +28,10 @@ namespace ChatApp.ViewModel
                         authDialog.Close();
                     }
                 }
+                else
+                {
+                    MessageBox.Show("Please fill all required fields!");
+                }
             });
             SignUpCommand = new DelegateCommand<AuthDialog>(authDialog =>
             {
@@ -46,6 +48,14 @@ namespace ChatApp.ViewModel
                         mainWindow.Show();
                         authDialog.Close();
                     }
+                    else
+                    {
+                        MessageBox.Show("Invalid credentials."); // Or no internet connection.
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Please fill all required fields!");
                 }
             });
         }

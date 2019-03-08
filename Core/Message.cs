@@ -21,8 +21,20 @@ namespace ChatApp.Core
         [JsonIgnore] // No need for serialization / deserialization.
         public string Body { get; set; }
 
+        [JsonIgnore]
+        public bool IsSentByMe { get; set; }
+
         // For simplicity keep the same format across server and client side and serialize and deserialize implicitly
-        public static Message FromJsonString(string jsonString) => JsonConvert.DeserializeObject<Message>(jsonString);
+        public static Message FromJsonString(string jsonString)
+        {
+            var message = JsonConvert.DeserializeObject<Message>(jsonString);
+            if (message.SenderUuid == AppUser.GetInstance().Uuid)
+            {
+                message.IsSentByMe = true;
+            }
+            return message;
+        }
+
         public string ToJsonString() => JsonConvert.SerializeObject(this);
     }
 }

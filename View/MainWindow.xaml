@@ -3,10 +3,149 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:vm="clr-namespace:ChatApp.ViewModel"
         xmlns:local="clr-namespace:ChatApp"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="ChatApp" Height="450" Width="600" ResizeMode="NoResize">
+    <Window.DataContext>
+        <vm:MainViewModel />
+    </Window.DataContext>
+    <Window.Resources>
+        <sys:String x:Key="AddButtonText">Add dialog</sys:String>
+        <sys:String x:Key="SendButtonText">Send</sys:String>
+        <sys:String x:Key="UpdateButtonText">Update</sys:String>
+        <sys:String x:Key="AddDialogTextBoxPlaceholder">Type login here</sys:String>
+        <sys:String x:Key="MessageTextBoxPlaceholder">Type message here</sys:String>
+        <!-- @see http://www.techken.in/coding/c-wpf-create-textbox-placeholder-using-xaml-code/ -->
+        <Style x:Key="PlaceHolder" TargetType="{x:Type TextBox}" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TextBox}">
+                        <Grid>
+                            <TextBox
+                                Text="{Binding Path=Text,
+                                                RelativeSource={RelativeSource TemplatedParent}, 
+                                                Mode=TwoWay,
+                                                UpdateSourceTrigger=PropertyChanged}"
+                                x:Name="textSource"
+                                Background="Transparent"
+                                Padding="4" BorderThickness="0" VerticalContentAlignment="Center"
+                                Panel.ZIndex="2" />
+                            <TextBox Text="{TemplateBinding Tag}" Background="{TemplateBinding Background}"
+                                     Padding="4" BorderThickness="0" Panel.ZIndex="1">
+                                <TextBox.Style>
+                                    <Style TargetType="{x:Type TextBox}">
+                                        <Setter Property="Foreground" Value="Transparent" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Path=Text, Source={x:Reference textSource}}"
+                                                         Value="">
+                                                <Setter Property="Foreground" Value="Gray" />
+                                                <Setter Property="HorizontalContentAlignment" Value="Left" />
+                                                <Setter Property="VerticalContentAlignment" Value="Center" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBox.Style>
+                            </TextBox>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!-- @see https://stackoverflow.com/a/17377564 -->
+        <Style x:Key="ButtonHoverStyle" TargetType="{x:Type Button}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="bg" Background="{TemplateBinding Background}" BorderThickness="0">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#bee6fd" TargetName="bg" />
+                                <Setter Property="TextElement.Foreground" Value="Black" TargetName="bg" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
     <Grid>
-        
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="0.5*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="30px" />
+        </Grid.RowDefinitions>
+        <!-- Dialogs -->
+        <ListBox Grid.Column="0" Grid.Row="0" BorderThickness="0" x:Name="DialogsListBox"
+                 ItemsSource="{Binding Dialogs}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="{Binding Path=DisplayName}" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <!-- Dialogs actions -->
+        <Grid Grid.Column="0" Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="80px" />
+            </Grid.ColumnDefinitions>
+
+            <TextBox Grid.Column="0" Width="Auto" Style="{StaticResource PlaceHolder}"
+                     Tag="{StaticResource AddDialogTextBoxPlaceholder}" Text="{Binding Path=LoginToAddDialog}" />
+            <Button Grid.Column="1" Content="{StaticResource AddButtonText}" VerticalAlignment="Stretch"
+                    Background="SeaGreen" Foreground="White" Width="80" BorderThickness="0"
+                    Command="{Binding AddDialogCommand}" Style="{StaticResource ButtonHoverStyle}" />
+        </Grid>
+        <!-- Messages -->
+        <ListBox Grid.Column="1" Grid.Row="0" BorderThickness="0"
+                 ItemsSource="{Binding ElementName=DialogsListBox, Path=SelectedItem.Messages}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Label Content="{Binding Path=Body}" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+            <ListBox.ItemContainerStyle>
+                <Style TargetType="ListBoxItem">
+                    <Style.Setters>
+                        <Setter Property="Visibility" Value="{Binding Path=IsVisible}" />
+                    </Style.Setters>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Path=IsSentByMe}" Value="True">
+                            <Setter Property="HorizontalContentAlignment" Value="Right" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ListBox.ItemContainerStyle>
+        </ListBox>
+        <!-- Messages actions -->
+        <Grid Grid.Column="1" Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="60px" />
+                <ColumnDefinition Width="60px" />
+            </Grid.ColumnDefinitions>
+
+            <TextBox Grid.Column="0" Width="Auto" Style="{StaticResource PlaceHolder}"
+                     Tag="{StaticResource MessageTextBoxPlaceholder}"
+                     Text="{Binding ElementName=DialogsListBox, Path=SelectedItem.MessageText}" />
+            <Button Grid.Column="1" Content="{StaticResource SendButtonText}" VerticalAlignment="Stretch"
+                    Background="SteelBlue" Foreground="White" Width="60" BorderThickness="0"
+                    Command="{Binding ElementName=DialogsListBox, Path=SelectedItem.SendMessageCommand}"
+                    Style="{StaticResource ButtonHoverStyle}" />
+            <Button Grid.Column="2" Content="{StaticResource UpdateButtonText}" VerticalAlignment="Stretch"
+                    Background="YellowGreen" Foreground="White" Width="60" BorderThickness="0"
+                    Command="{Binding ElementName=DialogsListBox, Path=SelectedItem.UpdateDialogCommand}"
+                    Style="{StaticResource ButtonHoverStyle}" />
+        </Grid>
     </Grid>
 </Window>
