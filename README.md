@@ -36,3 +36,7 @@ this repository.
 | agent-j | j_password | agent-j-private-key.xml |
 | agent-k | k_password | agent-k-private-key.xml |
 | agent-m | m_password | agent-m-private-key.xml |
+
+## Logging
+
+Log file `log.txt` placed next application binary.
